@@ -7,7 +7,7 @@ using namespace std;
 // Unsure of what the states are represented as
 #define PLAYER_1_COLOUR 1
 #define PLAYER_2_COLOUR -1
-
+#define EMPTY_COLOUR 0
 
 class Board{
   public:
@@ -34,6 +34,12 @@ class Board{
             } else {
               cout << 'B';
             }
+          } else if(GetBoard(x, y) == EMPTY_COLOUR){
+            if(USE_COLOR){
+              cout << "\e[1;37m0\e[0m";
+            } else {
+              cout << '0';
+            }
           }
           cout << ' ';
         }
@@ -48,11 +54,13 @@ class Board{
     Board(){
       for(int y = 0; y < BOARD_WIDTH; y++){
         for(int x = 0; x < BOARD_WIDTH; x++){
-          int r = rand() % 2; // Just for testing purposes fill the board with random positions
+          int r = rand() % 3; // Just for testing purposes fill the board with random positions
           if(r == 0){
             SetBoard(x, y, PLAYER_1_COLOUR);
-          } else {
+          } else if(r == 1) {
             SetBoard(x, y, PLAYER_2_COLOUR);
+          } else {
+            SetBoard(x, y, EMPTY_COLOUR);
           }
         }
       }
