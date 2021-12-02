@@ -276,7 +276,7 @@ class Board{
       }
     };
 
-    tuple<bool, int> CheckCorner(int x, int y){
+    tuple<bool, int> CheckCorner(int x, int y){ // Performs pattern recognition around the edges
       int edgenum;
       Tile colourA = PLAYER_RED;
       Tile colourB = PLAYER_BLUE;
