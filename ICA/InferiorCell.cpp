@@ -6,7 +6,7 @@
 using namespace std;
 using namespace std::chrono;
 
-#define BOARD_WIDTH 5
+#define BOARD_WIDTH 13
 #define USE_COLOR true
 // Unsure of what the states are represented as
 //#define PLAYER_1_COLOUR 1
@@ -62,24 +62,87 @@ class Board{
       }
     }
     // [pattern number][Red Or Blue][Coordinate pair][Coordinate]
-    #define PATTERN_TOT 3
+    #define PATTERN_TOT 3 * 6
     #define PATTERN_MAX_COORDS 4
     #define X -100
     const int patterns [PATTERN_TOT][2][PATTERN_MAX_COORDS][2] = {
+      // First Pattern rotated
       {
         {{-1, 0}, {0,-1}, {1,-1}, {1, 0}},
         {{ X, X}, {X, X}, {X, X}, {X, X}}
       },
       {
+        {{0, -1}, {1,-1}, {1, 0}, {0, 1}},
+        {{ X, X}, {X, X}, {X, X}, {X, X}}
+      },
+      {
+        {{1, -1}, {1, 0}, {0, 1}, {-1, 1}},
+        {{ X, X}, {X, X}, {X, X}, {X, X}}
+      },
+      {
+        {{1, 0}, {0, 1}, {-1, 1}, {-1, 0}},
+        {{ X, X}, {X, X}, {X, X}, {X, X}}
+      },
+      {
+        {{0, 1}, {-1, 1}, {-1, 0}, {0, -1}},
+        {{ X, X}, {X, X}, {X, X}, {X, X}}
+      },
+      {
+        {{-1, 1}, {-1, 0}, {0, -1}, {1, -1}},
+        {{ X, X}, {X, X}, {X, X}, {X, X}}
+      },
+      // Second Pattern rotated
+      {
         {{0, -1}, {1, -1}, {1, 0}, {X, X}},
         {{-1, 1}, {X,  X}, {X, X}, {X, X}}
       },
       {
+        {{1, -1}, {1, 0}, {0, 1}, {X, X}},
+        {{-1, 0}, {X,  X}, {X, X}, {X, X}}
+      },
+      {
+        {{1, 0},  {0, 1}, {-1, 1}, {X, X}},
+        {{0, -1}, {X,  X}, {X, X}, {X, X}}
+      },
+      {
+        {{0, 1}, {-1, 1}, {-1, 0}, {X, X}},
+        {{1, -1}, {X,  X}, {X, X}, {X, X}}
+      },
+      {
+        {{-1, 1}, {-1, 0}, {0, -1}, {X, X}},
+        {{1,  0}, {X,  X}, {X, X}, {X, X}}
+      },
+      {
+        {{-1, 0}, {0, -1}, {1, -1}, {X, X}},
+        {{0,  1}, {X,  X}, {X, X}, {X, X}}
+      },
+      // Third Pattern Rotated
+      {
         {{1,-1}, {1, 0}, {X, X}, {X, X}},
         {{-1,0}, {-1,1}, {X, X}, {X, X}}
+      },
+      {
+        {{1, 0}, {0, 1}, {X, X}, {X, X}},
+        {{-1,0}, {0, -1}, {X, X}, {X, X}}
+      },
+      {
+        {{0, 1}, {-1, 1}, {X, X}, {X, X}},
+        {{0, -1}, {1, -1}, {X, X}, {X, X}}
+      },
+      {
+        {{-1, 1}, {-1, 0}, {X, X}, {X, X}},
+        {{1, -1}, {1, 0}, {X, X}, {X, X}}
+      },
+      {
+        {{-1, 0}, {0, -1}, {X, X}, {X, X}},
+        {{1, 0}, {0, 1}, {X, X}, {X, X}}
+      },
+      {
+        {{0,-1}, {1, -1}, {X, X}, {X, X}},
+        {{0, 1}, {-1, 1}, {X, X}, {X, X}}
       }
     };
-    const int pattern_rotation_inner_ring [6][2] = {
+    const int p_rotate [6][2] = {
       {0, -1},
       {1, -1},
       {1,  0},
@@ -87,21 +150,6 @@ class Board{
       {-1, 1},
       {-1, 0}
     };
-    const int pattern_rotation_outer_ring [12][2] = {
-      {2,  -2},
-      {2,  -1},
-      {2,   0},
-      {1,   1},
-      {0,   2},
-      {-1,  2},
-      {-2,  2},
-      {-2,  1},
-      {-2,  0},
-      {-1, -1},
-      {0,  -2},
-      {1,  -2}
-    };
-
 
 
     tuple<bool, int> CheckForDeadCell(int x, int y){ // need to add handling for x< 0 && y < 0 etc.
@@ -177,6 +225,26 @@ class Board{
         }
       }
     }
+    void PrintPatterns(){
+      int x = 6;
+      int y = 6;
+      for(int p = 0; p < PATTERN_TOT; p++){
+        Board b(false);
+        for(int c = 0; c < 2; c++){
+          for(int coords = 0; coords < PATTERN_MAX_COORDS; coords++){
+            if(c == 0){
+              b.SetBoard(x + patterns[p][c][coords][0], y + patterns[p][c][coords][1], PLAYER_RED);
+            } else {
+              b.SetBoard(x + patterns[p][c][coords][0], y + patterns[p][c][coords][1], PLAYER_BLUE);
+            }
+
+
+          }
+        }
+        b.PrintBoard();
+      }
+    };
+
 
 };
 
@@ -189,18 +257,22 @@ int main() {
   b.SetBoard(x,   y-1,Board::PLAYER_BLUE);
   b.SetBoard(x+1, y-1, Board::PLAYER_BLUE);
   b.SetBoard(x+1, y, Board::PLAYER_BLUE);
+  b.PrintBoard();
   auto t1 = high_resolution_clock::now();
   for(int y = 0; y < BOARD_WIDTH; y++){
    for(int x = 0; x < BOARD_WIDTH; x++){
-     tuple<bool, int> result = b.CheckForDeadCell(x,y);
-     if(get<0>(result)){
-       cout << "Dead Cell found at: (" << x << ", " << y << ") Rule used: " << get<1>(result) << endl;
+     if(b.GetBoard(x,y) == Board::EMPTY_COLOUR){
+       tuple<bool, int> result = b.CheckForDeadCell(x,y);
+       if(get<0>(result)){
+         cout << "Dead Cell found at: (" << x << ", " << y << ") Rule used: " << get<1>(result) << endl;
+       }
      }
    }
   }
+
   auto t2 = high_resolution_clock::now();
   duration<double, std::milli> ms_double = t2 - t1;
-  b.PrintBoard();
   cout << "Time taken: " << ms_double.count() << "ms" <<endl;
+
   return 0;
 };
