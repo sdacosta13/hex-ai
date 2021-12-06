@@ -1,0 +1,267 @@
+#include <iostream>
+#include <cstring>
+#include <time.h>
+using namespace std;
+
+
+#define BOARD_WIDTH 5
+#define USE_COLOR true
+// Unsure of what the states are represented as
+//#define PLAYER_1_COLOUR 1
+//#define PLAYER_2_COLOUR -1
+//#define EMPTY_COLOUR 0
+
+class Board{
+  public:
+    int board [BOARD_WIDTH][BOARD_WIDTH] = {};
+    void SetBoard(int x, int y, int value){
+      board[y][x] = value;
+    }
+    int GetBoard(int x, int y){
+      return board[y][x];
+    }
+    enum Tile {
+      PLAYER_1_COLOUR = 1, // Red
+      PLAYER_2_COLOUR = -1, // Blue
+      EMPTY_COLOUR = 0
+    };
+    void PrintBoard(){
+      for(int y = 0; y < BOARD_WIDTH; y++){
+        for(int x = 0; x < BOARD_WIDTH; x++){
+          if(GetBoard(x, y) == PLAYER_1_COLOUR){
+            if(USE_COLOR){
+              cout << "\e[1;31mR\e[0m";
+            } else {
+              cout << 'R';
+            }
+
+          } else if (GetBoard(x, y) == PLAYER_2_COLOUR) {
+            if(USE_COLOR){
+              cout << "\e[1;34mB\e[0m";
+            } else {
+              cout << 'B';
+            }
+          } else if(GetBoard(x, y) == EMPTY_COLOUR){
+            if(USE_COLOR){
+              cout << "\e[1;37m0\e[0m";
+            } else {
+              cout << '0';
+            }
+          }
+          cout << ' ';
+        }
+        cout << "\n";
+        if(y + 1 != BOARD_WIDTH){
+          for(int i = 0; i < y + 1; i++){
+            cout << ' ';
+          }
+        }
+      }
+    }
+    // [pattern number][Red Or Blue][Coordinate pair][Coordinate]
+    #define PATTERN_TOT 3
+    #define PATTERN_MAX_COORDS 4
+    const int patterns [PATTERN_TOT][2][PATTERN_MAX_COORDS][2] = {
+      {
+        {{-1, 0}, {0,-1}, {1,-1}, {1, 0}},
+        {}
+      },
+      {
+        {{0, -1}, {1, -1}, {1, 0}},
+        {-1, 1}
+      },
+      {
+        {{1,-1}, {1,0}},
+        {{-1, 0}, {-1, 1}}
+      }
+    };
+    const int pattern_rotation_inner_ring [6][2] = {
+      {0, -1},
+      {1, -1},
+      {1,  0},
+      {0,  1},
+      {-1, 1},
+      {-1, 0}
+    };
+    const int pattern_rotation_outer_ring [12][2] = {
+      {2,  -2},
+      {2,  -1},
+      {2,   0},
+      {1,   1},
+      {0,   2},
+      {-1,  2},
+      {-2,  2},
+      {-2,  1},
+      {-2,  0},
+      {-1, -1},
+      {0,  -2},
+      {1,  -2}
+    };
+
+    bool RotatePatternAndCheck(int x, int y, int coordinatePairsBlue[PATTERN_MAX_COORDS][2], int coordinatePairsRed[PATTERN_MAX_COORDS][2], int rot){
+      int offset = 0;
+      // For Blue
+      int newRed [PATTERN_MAX_COORDS][2];
+      int newBlue [PATTERN_MAX_COORDS][2];
+      for(int pairNum = 0; pairNum < PATTERN_MAX_COORDS; pairNum++){
+        if(coordinatePairsBlue[pairNum] == NULL){
+          break;
+        }
+
+        bool innerSeen = false;
+        bool outerSeen = false;
+        int innerPos = 0;
+        int outerPos = 0;
+        for(int inner = 0; inner < 6; inner++){
+          if(pattern_rotation_inner_ring[inner] == coordinatePairsBlue[pairNum]){
+            innerSeen = true;
+            innerPos = inner;
+            break;
+          }
+        }
+        if(!innerSeen){
+          for(int outer = 0; outer < 6; outer++){
+            if(pattern_rotation_inner_ring[outer] == coordinatePairsBlue[pairNum]){
+              outerSeen = true;
+              outerPos = outer;
+              break;
+            }
+          }
+        }
+        if(!innerSeen && !innerSeen){
+          cout << "ERROR - invalid pattern coordinates";
+        }
+        if(outerSeen && innerSeen){
+          cout << "ERROR - program incorrect";
+        }
+        if(innerSeen){
+          innerPos = (innerPos + rot) % 6;
+          memcpy(newBlue[pairNum], pattern_rotation_inner_ring[innerPos], sizeof(newBlue[pairNum]));
+        } else if(outerSeen) {
+          outerPos = (outerPos + (rot * 2)) % 12;
+          memcpy(newBlue[pairNum], pattern_rotation_outer_ring[outerPos], sizeof(newBlue[pairNum]));
+        }
+      }
+      for(int pairNum = 0; pairNum < PATTERN_MAX_COORDS; pairNum++){
+        if(coordinatePairsRed[pairNum] == NULL){
+          break;
+        }
+
+        bool innerSeen = false;
+        bool outerSeen = false;
+        int innerPos = 0;
+        int outerPos = 0;
+        for(int inner = 0; inner < 6; inner++){
+          if(pattern_rotation_inner_ring[inner] == coordinatePairsRed[pairNum]){
+            innerSeen = true;
+            innerPos = inner;
+            break;
+          }
+        }
+        if(!innerSeen){
+          for(int outer = 0; outer < 6; outer++){
+            if(pattern_rotation_inner_ring[outer] == coordinatePairsRed[pairNum]){
+              outerSeen = true;
+              outerPos = outer;
+              break;
+            }
+          }
+        }
+        if(!innerSeen && !innerSeen){
+          cout << "ERROR - invalid pattern coordinates" << endl;
+        }
+        if(outerSeen && innerSeen){
+          cout << "ERROR - program incorrect" << endl;
+        }
+        if(innerSeen){
+          innerPos = (innerPos + rot) % 6;
+          memcpy(newRed[pairNum], pattern_rotation_inner_ring[innerPos], sizeof(newRed[pairNum]));
+        } else if(outerSeen) {
+          outerPos = (outerPos + (rot * 2)) % 12;
+          memcpy(newRed[pairNum], pattern_rotation_outer_ring[outerPos], sizeof(newRed[pairNum]));
+        }
+      }
+      // Now Have the rotated coordinates
+      // perform the actual check
+      for(int blueCoords = 0; blueCoords < PATTERN_MAX_COORDS; blueCoords++){
+        if(newBlue[blueCoords] == NULL){
+          break;
+        } else {
+          if(GetBoard(x + newBlue[blueCoords][0], y + newBlue[blueCoords][1]) != PLAYER_2_COLOUR){
+            return false; // Can stop checking this pattern if deviation is found
+          }
+        }
+      }
+      for(int redCoords = 0; redCoords < PATTERN_MAX_COORDS; redCoords++){
+        if(newRed[redCoords] == NULL){
+          break;
+        } else {
+          if(GetBoard(x + newRed[redCoords][0], y + newRed[redCoords][1]) != PLAYER_1_COLOUR){
+            return false; // Can stop checking this pattern if deviation is found
+          }
+        }
+      }
+      return true;
+    }
+
+    bool CheckForDeadCell(int x, int y){
+      int redCells [PATTERN_MAX_COORDS][2];
+      int blueCells [PATTERN_MAX_COORDS][2];
+      int temp [PATTERN_MAX_COORDS][2];
+
+      for(int cNum = 0; cNum < 2; cNum++){
+        for(int p_num; p_num < PATTERN_TOT; p_num++){
+          memcpy(redCells, patterns[p_num][0], sizeof(redCells));
+          memcpy(blueCells, patterns[p_num][1], sizeof(blueCells));
+
+          for(int rot = 0; rot < 6; rot++){
+            if(RotatePatternAndCheck(x, y, redCells, blueCells, rot)){
+              return true;
+            }
+          }
+        }
+        memcpy(temp, redCells, sizeof(temp));
+        memcpy(redCells, blueCells, sizeof(redCells));
+        memcpy(blueCells, temp, sizeof(blueCells));
+      }
+
+      return false;
+    }
+    Board(bool random){
+      for(int y = 0; y < BOARD_WIDTH; y++){
+        for(int x = 0; x < BOARD_WIDTH; x++){
+          if(random){
+            int r = rand() % 3; // Just for testing purposes fill the board with random positions
+            if(r == 0){
+              SetBoard(x, y, PLAYER_1_COLOUR);
+            } else if(r == 1) {
+              SetBoard(x, y, PLAYER_2_COLOUR);
+            } else {
+              SetBoard(x, y, EMPTY_COLOUR);
+            }
+          } else {
+            SetBoard(x,y, EMPTY_COLOUR);
+          }
+        }
+      }
+    }
+
+};
+
+
+int main() {
+  Board b(false);
+  clock_t before = clock();
+  for(int y = 0; y < BOARD_WIDTH; y++){
+    for(int x = 0; x < BOARD_WIDTH; x++){
+      if(b.CheckForDeadCell(x,y)){
+        cout << "Dead Cell at " << x << ", " << y << endl;
+      }
+    }
+  }
+  clock_t diff = clock() - before;
+  int msec = diff * 1000/ CLOCKS_PER_SEC;
+  b.PrintBoard();
+  cout << "Time taken: " << msec << endl;
+  return 0;
+};
