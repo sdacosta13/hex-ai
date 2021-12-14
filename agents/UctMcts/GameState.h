@@ -23,16 +23,21 @@ class GameState{
         bool would_lose(std::tuple<int, int> cell, int colour);
         void setTurn(int player);
         std::vector<std::tuple<int, int>> moves();
+        std::vector<std::tuple<int, int>> reducedMoves();
         std::vector<std::tuple<int, int>> getNeighbours(std::tuple<int, int> cell);
+
     private:
         int board[BOARDSIZE][BOARDSIZE] = {0};
         int to_play = playerRED;
         int red_played = 0;
-        int blue_played = 0;      
+        int blue_played = 0;
         void play_red(std::tuple<int,int> cell);
         void play_blue(std::tuple<int,int> cell);
         UnionFind redGroups;
         UnionFind blueGroups;
+        int GetBoard(int x, int y);
+        std::tuple<bool,int> CheckForDeadCell(int x, int y);
+        std::tuple<bool,int> CheckCorner(int x, int y);
 
 };
 
