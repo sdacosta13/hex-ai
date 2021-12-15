@@ -8,6 +8,8 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
+#include <algorithm>
+#include <tuple>
 using std::vector;
 using std::string;
 
@@ -32,6 +34,20 @@ int turn = 0;
 
 GameState gameState = GameState();
 UctMcts tree = UctMcts(gameState);
+const bool swapRules[11][11] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1},
+      {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+          {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+              {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                    {1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0},
+                      {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
 
 int connectToServer(){
   // if the return from the server socket call fails abort
@@ -77,6 +93,7 @@ vector<string> getMessage(){
   // delimiter for message is ";"
   std::stringstream strStream(messageOutOfBuffer);
   while(getline(strStream, splitToken, ';')){
+    splitToken.erase(std::remove_if(splitToken.begin(), splitToken.end(), ::isspace), splitToken.end());
     messageToReturn.push_back(splitToken);
   }
 
@@ -115,9 +132,14 @@ bool interpretMessage(vector<string> messageFromServer){
   else if(messageCategory.compare("CHANGE") == 0){
     if(messageFromServer[3].compare("END") == 0){ return false; }
     else if(messageFromServer[1].compare("SWAP") == 0){
-      //TODO: if the opponent has swapped we are a different color, and should update that
+      if(ourColor.compare("R") == 0){
+        ourColor="B";
+      }
+      else if(ourColor.compare("B") == 0){
+        ourColor="R";
+      }
     }
-    else {
+    if(messageFromServer[3].compare(ourColor) == 0){
         std::stringstream opponentMove(messageFromServer[1]);
         vector<int> opponentMoveCoords;
 
@@ -130,13 +152,19 @@ bool interpretMessage(vector<string> messageFromServer){
         int opponentMoveX = opponentMoveCoords[0];
         int opponentMoveY = opponentMoveCoords[1];
 
+        //make opponents move to update gamestate
+        gameState.play(std::tuple<int, int>{opponentMoveX, opponentMoveY});
+
         //if we are on the turn to be given the swap option
-        if (turn == 2 && opponentMoveX!=2){ //to add, and intepreted move matches swap map
-            sendMessage("SWAP\n");
-            return true;
+        if (turn == 2){ //to add, and intepreted move matches swap map
+            if(swapRules[opponentMoveX][opponentMoveY]){
+              sendMessage("SWAP\n");
+              return true;
+            }
+
         }
         // nMoves =  min( numberOfMovesOutOfBook, 10 );
-        // factor = 2 -  nMoves / 10 
+        // factor = 2 -  nMoves / 10
         // target = timeLeft / numberOfMovesUntilNextTimeControl
         // time   = factor * target
         float time = 0.2;
