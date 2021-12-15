@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tuple>
+#include <time.h>
 using std::vector;
 using std::string;
 
@@ -49,6 +50,7 @@ const bool swapRules[11][11] = {
                       {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+double timeRemaining = 300;
 
 int connectToServer(){
   // if the return from the server socket call fails abort
@@ -122,9 +124,9 @@ bool interpretMessage(vector<string> messageFromServer){
     ourColor = messageFromServer[2];
     if(ourColor.compare("R") == 0){
       Node rootNode = Node();
-      rootNode.coord = std::make_tuple(9, 7);
+      rootNode.coord = std::make_tuple(9, 2);
       tree.rootNode = rootNode;
-      string moveToSend = "9,7\n";
+      string moveToSend = "9,2\n";
       makeMove(moveToSend, rootNode.coord);
       return true;
     }
@@ -166,26 +168,25 @@ bool interpretMessage(vector<string> messageFromServer){
         int opponentMoveY = opponentMoveCoords[1];
 
         //make opponents move to update gamestate
-        gameState.play(std::tuple<int, int>{opponentMoveX, opponentMoveY});
+        gameState.play(std::tuple<int, int>{opponentMoveY, opponentMoveX});
 
         //if we are on the turn to be given the swap option
-        if (turn == 2){ //to add, and intepreted move matches swap map
+        if (turn == 2){
             if(swapRules[opponentMoveX][opponentMoveY]){
               sendMessage("SWAP\n");
               return true;
             }
 
         }
-        // nMoves =  min( numberOfMovesOutOfBook, 10 );
-        // factor = 2 -  nMoves / 10
-        // target = timeLeft / numberOfMovesUntilNextTimeControl
-        // time   = factor * target
-        gameState.moves();
-        float time = 0.2;
+        float factor = 2 - (turn / 20);
+        float target = timeRemaining / 60;
+        float time = (factor * target) + 2;
         std::cout << "hello\n";
         tree.search(time);
         std::tuple<int, int> bestMove = tree.getBestMove();
-        std::string bestMoveString = std::to_string(std::get<0>(bestMove)) + "," + std::to_string(std::get<1>(bestMove)) + "\n";
+        std::cout << "hello\n";
+        std::string bestMoveString = std::to_string(std::get<1>(bestMove)) + "," + std::to_string(std::get<0>(bestMove)) + "\n";
+        std::cout << "hello\n";
         makeMove(bestMoveString, bestMove);
     };
   }
@@ -205,7 +206,9 @@ int runAgent(){
   //run the agent by getting messages from the server, then doing something with these messages
   do{
     messageFromServer = getMessage();
+    time_t startTimer = time(0);
     messageResolved = interpretMessage(messageFromServer);
+    timeRemaining = timeRemaining - difftime(time(0), startTimer);
   }while(messageResolved); // if message ever returns false after interpret, then end the agent
 
   closeSocket();
@@ -218,5 +221,4 @@ int main(int argc , char *argv[]){
   //print after we have finished the agent, and return
   printf("\n Finished Running cpp Agent with code %d \n", returnCode);
   return 0;
-
 }
