@@ -96,7 +96,7 @@ void GameState::swap(){
   this->to_play = playerBLUE;
   UnionFind temp = this->redGroups;
   this->redGroups = this->blueGroups;
-  this->blueGroups = this->redGroups;
+  this->blueGroups = temp;
 }
 
 std::vector<std::tuple<int, int>> GameState::moves() {
