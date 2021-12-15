@@ -20,6 +20,7 @@ class GameState{
         void play(std::tuple<int,int> cell);
         int winner();
         int turn();
+        void swap();
         bool would_lose(std::tuple<int, int> cell, int colour);
         void setTurn(int player);
         std::vector<std::tuple<int, int>> moves();
