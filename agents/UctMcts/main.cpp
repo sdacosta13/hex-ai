@@ -1,5 +1,5 @@
-#include <GameState.h>
-#include <UctMcts.h>
+#include "GameState.h"
+#include "UctMcts.h"
 
 #include <stdio.h>
 #include <netinet/in.h>
@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <vector>
+#include <iostream>
 using std::vector;
 using std::string;
 
@@ -91,6 +92,11 @@ int sendMessage(string messageToSend){
   return 0;
 }
 
+void makeMove(std::string moveString, std::tuple<int, int> moveTuple){
+    sendMessage(moveString);
+    gameState.play(moveTuple);
+};
+
 bool interpretMessage(vector<string> messageFromServer){
   turn++;
   string messageCategory = messageFromServer.front();
@@ -101,7 +107,7 @@ bool interpretMessage(vector<string> messageFromServer){
       rootNode.coord = std::make_tuple(9, 7);
       tree.rootNode = rootNode;
       string moveToSend = "9,7\n";
-      sendMessage(moveToSend);
+      makeMove(moveToSend, std::make_tuple(9, 7));
       return true;
     }
   }
@@ -136,6 +142,7 @@ bool interpretMessage(vector<string> messageFromServer){
         tree.search(time);
         std::tuple<int, int> bestMove = tree.getBestMove();
         std::string bestMoveString = std::to_string(std::get<0>(bestMove)) + "," + std::to_string(std::get<1>(bestMove)) + "\n";
+        std::cout << "hello";
         makeMove(bestMoveString, bestMove);
     };
   }
@@ -144,11 +151,6 @@ bool interpretMessage(vector<string> messageFromServer){
   }
   return true;
 }
-
-void makeMove(string moveString, std::tuple<int, int> moveTuple){
-    sendMessage(moveString);
-    gameState.play(moveTuple);
-};
 
 int runAgent(){
   //connect the agent

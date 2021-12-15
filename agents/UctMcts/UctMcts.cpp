@@ -1,10 +1,8 @@
-#include <tuple>
-#include <list>
+#include "UctMcts.h"
 #include <limits>
+#include <algorithm>
 #include <map>
 #include <cmath>
-#include "UctMcts.h"
-#include "Node.h"
 
 int Node::getUctValue(float explore = 0.5) {
     if (this->numOfVisits == 0) {
@@ -28,7 +26,7 @@ void UctMcts::search(float timeBudget) {
         std::tie(newNode, newState) = this->selectNode();
         int toPlay = newState.turn();
         int simulationWinner = this->simulate(newState);
-        this->updateReward(newNode, toPlay, simulationWinner);
+        this->updateReward(&newNode, toPlay, simulationWinner);
         time_t end = time(0);
         time_t timeTaken = end-start;
         timeLeft = timeLeft - timeTaken;
@@ -55,7 +53,7 @@ std::tuple<Node, GameState> UctMcts::selectNode() {
         };
     }
 
-    if (this->expand(node, state)){
+    if (this->expand(&node, state)){
         auto it = node.children.begin();
         std::advance(it, rand() % node.children.size());
         state.play(it->coord);
@@ -71,52 +69,52 @@ bool UctMcts::expand(Node* parent, GameState state){
     };
 
     std::vector<std::tuple<int, int>> moves = state.moves();
-    for (auto it = moves.begin(); it != moves.end(); ++it) {
+    for (int i=0; i < moves.size(); i++) {
         Node newChild;
-        newChild.coord = it;
+        newChild.coord = moves[i];
         newChild.parent = parent;
         children.push_back(newChild);
     }
 
-    parent.children = children;
-    return true
+    parent->children = children;
+    return true;
 };
 
 int UctMcts::simulate(GameState state) {
     std::vector<std::tuple<int, int>> moves = state.moves();
 
     while (state.winner() == 0) {
-        int random = rand() % moves.size()
+        int random = rand() % moves.size();
         std::tuple<int, int> randomMove = moves[random];
         state.play(randomMove);
-        moves.erase(random);
+        moves.erase(moves.begin() + random);
     }
 
-    return state.winner()
+    return state.winner();
 };
 
-void UctMcts::updateReward(Node node, int toPlay, int simulationWinner) {
+void UctMcts::updateReward(Node* node, int toPlay, int simulationWinner) {
     int reward = 1;
     if (simulationWinner == toPlay) {
         reward = 0;
     }
     do {
-        node.numOfVisits += 1;
-        node.reward += reward;
-        node = node.parent;
+        node->numOfVisits += 1;
+        node->reward += reward;
+        node = node->parent;
         if (reward == 1) {
             reward = 0;
         } else {
             reward = 1;
         }
-    } while (node.parent);
+    } while (node->parent);
 };
 
 std::tuple<int, int> UctMcts::getBestMove() {
-    if (this->initialState.winner() == 0) {
-        return std::make_tuple(-1, -1);
-    }
-
-    auto it = max_element(std::begin(this->rootNode.children), std::end(this->rootNode.children));
-    return it.coord;
+    std::list<Node> children = this->rootNode.children;
+    return (*std::max_element(children.begin(), children.end(),
+        []( const Node &a, const Node &b )
+        {
+            return a.numOfVisits < b.numOfVisits;
+        } )).coord;
 };

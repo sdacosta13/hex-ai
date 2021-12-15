@@ -12,7 +12,7 @@ bool UnionFind::join(std::tuple<int,int> x, std::tuple<int,int> y){
     std::tuple<int,int> rep_y = this->find(y);
     if (rep_x == rep_y){
         return false;
-    }
+    };
     if (this->rank[rep_x] < this->rank[rep_y]){
         this->parent[rep_x] = rep_y;
         this->groups[rep_y].insert(this->groups[rep_y].end(), this->groups[rep_x].begin(),this->groups[rep_x].end());
@@ -26,8 +26,9 @@ bool UnionFind::join(std::tuple<int,int> x, std::tuple<int,int> y){
         this->rank[rep_y] += 1;
         this->groups[rep_y].insert(this->groups[rep_y].end(), this->groups[rep_x].begin(),this->groups[rep_x].end());
         this->groups.erase(rep_x);
-    }
-}
+    };
+    return true;
+};
 
 std::tuple<int,int> UnionFind::find(std::tuple<int,int> x){
     if (this->parent.count(x) == 0){
