@@ -57,17 +57,17 @@ void GameState::play_blue(std::tuple<int,int> cell){
     }
 
     if (col == 0){
-        this->redGroups.join(EDGE1, cell);
+        this->blueGroups.join(EDGE1, cell);
     }
 
     if (col == BOARDSIZE-1) {
-        this->redGroups.join(EDGE2, cell);
+        this->blueGroups.join(EDGE2, cell);
     }
 
     std::vector<std::tuple<int, int>> neighbours = this->getNeighbours(cell);
     for (auto itr:neighbours){
         if (this->board[std::get<0>(itr)][std::get<1>(itr)] == playerBLUE){
-            this->redGroups.join(itr, cell);
+            this->blueGroups.join(itr, cell);
         }
     }
 }

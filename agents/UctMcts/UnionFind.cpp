@@ -35,7 +35,7 @@ std::tuple<int,int> UnionFind::find(std::tuple<int,int> x){
         this->parent[x] = x;
         this->rank[x] = 0;
         if (std::find(this->ignored.begin(), this->ignored.end(), x) != this->ignored.end()){
-            this->groups[x].clear();
+            this->groups[x] = {};
         } else {
             this->groups[x] = {x};
         }
