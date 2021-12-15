@@ -34,6 +34,20 @@ int turn = 0;
 
 GameState gameState = GameState();
 UctMcts tree = UctMcts(gameState);
+const bool swapRules[11][11] = {
+  {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1},
+      {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+          {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+              {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+                  {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0},
+                    {1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0},
+                      {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
 
 int connectToServer(){
   // if the return from the server socket call fails abort
@@ -139,11 +153,14 @@ bool interpretMessage(vector<string> messageFromServer){
 
         //make opponents move to update gamestate
         gameState.play(std::tuple<int, int>{opponentMoveX, opponentMoveY});
-        
+
         //if we are on the turn to be given the swap option
-        if (turn == 2 && opponentMoveX!=2){ //to add, and intepreted move matches swap map
-            sendMessage("SWAP\n");
-            return true;
+        if (turn == 2){ //to add, and intepreted move matches swap map
+            if(swapRules[opponentMoveX][opponentMoveY]){
+              sendMessage("SWAP\n");
+              return true;
+            }
+
         }
         // nMoves =  min( numberOfMovesOutOfBook, 10 );
         // factor = 2 -  nMoves / 10

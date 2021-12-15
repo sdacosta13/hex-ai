@@ -455,14 +455,15 @@ class Board{
 
 
 int main() {
-  Board b(true);
+  Board b(false);
   int x = 2;
   int y = 2;
-  b.PrintEdgePatterns();
+  //b.PrintEdgePatterns();
+  b.PrintBoard();
   auto t1 = high_resolution_clock::now();
-  /*
+
   for(int y = 0; y < BOARD_WIDTH; y++){
-   for(int x = 0; x < BOARD_WIDTH; x++){
+    for(int x = 0; x < BOARD_WIDTH; x++){
      if(b.GetBoard(x,y) == Board::EMPTY_COLOUR){
        tuple<bool, int> result = b.CheckForDeadCell(x,y);
        if(get<0>(result)){
@@ -470,7 +471,12 @@ int main() {
        }
      }
    }
- }*/
+ }
+
+
+
+
+
 
   //tuple<bool, int> result = b.CheckForDeadCell(12, 10);
   //cout << result.get<0>;
