@@ -34,6 +34,7 @@ int turn = 0;
 
 GameState gameState = GameState();
 UctMcts tree = UctMcts(gameState);
+
 const bool swapRules[11][11] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1},
@@ -115,7 +116,6 @@ void makeMove(std::string moveString, std::tuple<int, int> moveTuple){
 };
 
 bool interpretMessage(vector<string> messageFromServer){
-    std::cout << "hello\n";
   turn++;
   string messageCategory = messageFromServer.front();
   if (messageCategory.compare("START") == 0){
@@ -125,13 +125,26 @@ bool interpretMessage(vector<string> messageFromServer){
       rootNode.coord = std::make_tuple(9, 7);
       tree.rootNode = rootNode;
       string moveToSend = "9,7\n";
-      makeMove(moveToSend, std::make_tuple(9, 7));
+      makeMove(moveToSend, rootNode.coord);
       return true;
     }
   }
   else if(messageCategory.compare("CHANGE") == 0){
     if(messageFromServer[3].compare("END") == 0){ return false; }
     else if(messageFromServer[1].compare("SWAP") == 0){
+      std::stringstream opponentMove(messageFromServer[1]);
+      vector<int> opponentMoveCoords;
+      while(opponentMove.good()){
+        string temp;
+        getline( opponentMove, temp, ',' );
+        opponentMoveCoords.push_back(atoi(temp.c_str()));
+      }
+      //get x and y of opponents move
+      int opponentMoveX = opponentMoveCoords[0];
+      int opponentMoveY = opponentMoveCoords[1];
+      Node rootNode = Node();
+      rootNode.coord = std::make_tuple(opponentMoveX, opponentMoveY);
+      tree.rootNode = rootNode;
       if(ourColor.compare("R") == 0){
         ourColor="B";
       }
@@ -167,14 +180,12 @@ bool interpretMessage(vector<string> messageFromServer){
         // factor = 2 -  nMoves / 10
         // target = timeLeft / numberOfMovesUntilNextTimeControl
         // time   = factor * target
+        gameState.moves();
         float time = 0.2;
         std::cout << "hello\n";
         tree.search(time);
-        std::cout << "hello\n";
         std::tuple<int, int> bestMove = tree.getBestMove();
-        std::cout << "hello\n";
         std::string bestMoveString = std::to_string(std::get<0>(bestMove)) + "," + std::to_string(std::get<1>(bestMove)) + "\n";
-        std::cout << "hello\n";
         makeMove(bestMoveString, bestMove);
     };
   }

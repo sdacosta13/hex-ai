@@ -7,7 +7,7 @@ class UctMcts {
         Node rootNode;
         void search(float timeBudget);
         std::tuple<Node, GameState> selectNode();
-        bool expand(Node* parent, GameState state);
+        std::list<Node> expand(Node parent, GameState state);
         int simulate(GameState state);
         void updateReward(Node* node, int toPlay, int simulationWinner);
         std::tuple<int, int> getBestMove();

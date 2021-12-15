@@ -83,9 +83,9 @@ void GameState::setTurn(int player) {
 }
 
 int GameState::winner(){
-    if (redGroups.connected(EDGE1, EDGE2)){
+    if (this->redGroups.connected(EDGE1, EDGE2)){
         return playerRED;
-    } else if (redGroups.connected(EDGE1, EDGE2)){
+    } else if (this->blueGroups.connected(EDGE1, EDGE2)){
         return playerBLUE;
     } else {
         return 0;
@@ -99,7 +99,7 @@ std::vector<std::tuple<int, int>> GameState::moves() {
             if (this->board[i][j] == 0) {
                 moveList.push_back(std::tuple<int,int>(i,j));
             } else {
-                std::cout << i << j << "\n";
+                std::cout << i << " " << j << "\n";
             }
         }
     }
