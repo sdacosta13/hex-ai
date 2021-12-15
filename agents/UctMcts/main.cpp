@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <tuple>
+#include <time.h>
 using std::vector;
 using std::string;
 
@@ -48,6 +49,7 @@ const bool swapRules[11][11] = {
                       {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+double timeRemaining = 300;
 
 int connectToServer(){
   // if the return from the server socket call fails abort
@@ -124,7 +126,7 @@ bool interpretMessage(vector<string> messageFromServer){
       Node rootNode = Node();
       rootNode.coord = std::make_tuple(9, 7);
       tree.rootNode = rootNode;
-      string moveToSend = "9,7\n";
+      string moveToSend = "9,2\n";
       makeMove(moveToSend, std::make_tuple(9, 7));
       return true;
     }
@@ -156,18 +158,17 @@ bool interpretMessage(vector<string> messageFromServer){
         gameState.play(std::tuple<int, int>{opponentMoveX, opponentMoveY});
 
         //if we are on the turn to be given the swap option
-        if (turn == 2){ //to add, and intepreted move matches swap map
-            if(swapRules[opponentMoveX][opponentMoveY]){
+        if (turn == 2){
+            if(swapRules[opponentMoveY][opponentMoveX]){
               sendMessage("SWAP\n");
               return true;
             }
 
         }
         // nMoves =  min( numberOfMovesOutOfBook, 10 );
-        // factor = 2 -  nMoves / 10
-        // target = timeLeft / numberOfMovesUntilNextTimeControl
-        // time   = factor * target
-        float time = 0.2;
+        float factor = 2 - (turn / 20);
+        float target = timeRemaining / 60;
+        float time = (factor * target) + 2;
         std::cout << "hello\n";
         tree.search(time);
         std::cout << "hello\n";
@@ -194,7 +195,9 @@ int runAgent(){
   //run the agent by getting messages from the server, then doing something with these messages
   do{
     messageFromServer = getMessage();
+    time_t startTimer = time(0);
     messageResolved = interpretMessage(messageFromServer);
+    timeRemaining = timeRemaining - difftime(time(0), startTimer);
   }while(messageResolved); // if message ever returns false after interpret, then end the agent
 
   closeSocket();
