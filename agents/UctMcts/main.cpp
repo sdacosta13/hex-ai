@@ -155,11 +155,11 @@ bool interpretMessage(vector<string> messageFromServer){
         int opponentMoveY = opponentMoveCoords[1];
 
         //make opponents move to update gamestate
-        gameState.play(std::tuple<int, int>{opponentMoveX, opponentMoveY});
+        gameState.play(std::tuple<int, int>{opponentMoveY, opponentMoveX});
 
         //if we are on the turn to be given the swap option
         if (turn == 2){
-            if(swapRules[opponentMoveY][opponentMoveX]){
+            if(swapRules[opponentMoveX][opponentMoveY]){
               sendMessage("SWAP\n");
               return true;
             }
@@ -174,7 +174,7 @@ bool interpretMessage(vector<string> messageFromServer){
         std::cout << "hello\n";
         std::tuple<int, int> bestMove = tree.getBestMove();
         std::cout << "hello\n";
-        std::string bestMoveString = std::to_string(std::get<0>(bestMove)) + "," + std::to_string(std::get<1>(bestMove)) + "\n";
+        std::string bestMoveString = std::to_string(std::get<1>(bestMove)) + "," + std::to_string(std::get<0>(bestMove)) + "\n";
         std::cout << "hello\n";
         makeMove(bestMoveString, bestMove);
     };
