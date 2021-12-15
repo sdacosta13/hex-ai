@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <map>
 #include <cmath>
+#include <iostream>
 
 int Node::getUctValue(float explore = 0.5) {
     if (this->numOfVisits == 0) {
@@ -19,16 +20,23 @@ int Node::getUctValue(float explore = 0.5) {
 void UctMcts::search(float timeBudget) {
     time_t start = time(0);
     float timeLeft = timeBudget;
-
+    std::cout << "1\n";
     while (timeLeft > 0) {
         Node newNode;
         GameState newState;
+        std::cout << "2\n";
         std::tie(newNode, newState) = this->selectNode();
+        std::cout << "3\n";
         int toPlay = newState.turn();
+        std::cout << "4\n";
         int simulationWinner = this->simulate(newState);
+        std::cout << "5\n";
         this->updateReward(&newNode, toPlay, simulationWinner);
+        std::cout << "6\n";
         time_t end = time(0);
+        std::cout << "7\n";
         time_t timeTaken = end-start;
+        std::cout << "8\n";
         timeLeft = timeLeft - timeTaken;
     };
 };
@@ -81,15 +89,18 @@ bool UctMcts::expand(Node* parent, GameState state){
 };
 
 int UctMcts::simulate(GameState state) {
+    std::cout << "s1\n";
     std::vector<std::tuple<int, int>> moves = state.moves();
-
+    std::cout << "s2\n";
     while (state.winner() == 0) {
         int random = rand() % moves.size();
         std::tuple<int, int> randomMove = moves[random];
         state.play(randomMove);
-        moves.erase(moves.begin() + random);
-    }
-
+        std::swap(moves[random], moves.back());
+        moves.pop_back();
+        return 0;
+    };
+    std::cout << "s5\n";
     return state.winner();
 };
 

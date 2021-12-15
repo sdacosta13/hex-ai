@@ -98,6 +98,7 @@ void makeMove(std::string moveString, std::tuple<int, int> moveTuple){
 };
 
 bool interpretMessage(vector<string> messageFromServer){
+    std::cout << "hello\n";
   turn++;
   string messageCategory = messageFromServer.front();
   if (messageCategory.compare("START") == 0){
@@ -139,10 +140,13 @@ bool interpretMessage(vector<string> messageFromServer){
         // target = timeLeft / numberOfMovesUntilNextTimeControl
         // time   = factor * target
         float time = 0.2;
+        std::cout << "hello\n";
         tree.search(time);
+        std::cout << "hello\n";
         std::tuple<int, int> bestMove = tree.getBestMove();
+        std::cout << "hello\n";
         std::string bestMoveString = std::to_string(std::get<0>(bestMove)) + "," + std::to_string(std::get<1>(bestMove)) + "\n";
-        std::cout << "hello";
+        std::cout << "hello\n";
         makeMove(bestMoveString, bestMove);
     };
   }

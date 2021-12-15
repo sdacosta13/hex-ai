@@ -98,6 +98,8 @@ std::vector<std::tuple<int, int>> GameState::moves() {
         for (int j=0; j<BOARDSIZE; j++){
             if (this->board[i][j] == 0) {
                 moveList.push_back(std::tuple<int,int>(i,j));
+            } else {
+                std::cout << i << j << "\n";
             }
         }
     }
