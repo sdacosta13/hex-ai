@@ -134,19 +134,6 @@ bool interpretMessage(vector<string> messageFromServer){
   else if(messageCategory.compare("CHANGE") == 0){
     if(messageFromServer[3].compare("END") == 0){ return false; }
     else if(messageFromServer[1].compare("SWAP") == 0){
-      std::stringstream opponentMove(messageFromServer[1]);
-      vector<int> opponentMoveCoords;
-      while(opponentMove.good()){
-        string temp;
-        getline( opponentMove, temp, ',' );
-        opponentMoveCoords.push_back(atoi(temp.c_str()));
-      }
-      //get x and y of opponents move
-      int opponentMoveX = opponentMoveCoords[0];
-      int opponentMoveY = opponentMoveCoords[1];
-      Node rootNode = Node();
-      rootNode.coord = std::make_tuple(opponentMoveX, opponentMoveY);
-      tree.rootNode = rootNode;
       if(ourColor.compare("R") == 0){
         ourColor="B";
       }
@@ -155,33 +142,77 @@ bool interpretMessage(vector<string> messageFromServer){
       }
     }
     if(messageFromServer[3].compare(ourColor) == 0){
-        std::stringstream opponentMove(messageFromServer[1]);
-        vector<int> opponentMoveCoords;
+        if(messageFromServer[1].compare("SWAP") != 0){
+            std::stringstream opponentMove(messageFromServer[1]);
+            vector<int> opponentMoveCoords;
 
-        while(opponentMove.good()){
-            string temp;
-            getline( opponentMove, temp, ',' );
-            opponentMoveCoords.push_back(atoi(temp.c_str()));
-        }
-        //get x and y of opponents move
-        int opponentMoveX = opponentMoveCoords[0];
-        int opponentMoveY = opponentMoveCoords[1];
-
-        //make opponents move to update gamestate
-        gameState.play(std::tuple<int, int>{opponentMoveY, opponentMoveX});
-
-        //if we are on the turn to be given the swap option
-        if (turn == 2){
-            if(swapRules[opponentMoveX][opponentMoveY]){
-              sendMessage("SWAP\n");
-              return true;
+            while(opponentMove.good()){
+                string temp;
+                getline( opponentMove, temp, ',' );
+                opponentMoveCoords.push_back(atoi(temp.c_str()));
             }
+            //get x and y of opponents move
+            int opponentMoveX = opponentMoveCoords[0];
+            int opponentMoveY = opponentMoveCoords[1];
 
+            //make opponents move to update gamestate
+            gameState.play(std::tuple<int, int>{opponentMoveY, opponentMoveX});
+
+            //if we are on the turn to be given the swap option
+            if (turn == 2){
+                if(swapRules[opponentMoveX][opponentMoveY]){
+                  sendMessage("SWAP\n");
+                  return true;
+                }
+
+            }
+        }
+        else{
+          //reintialize the board state on a swap (below what we had before in swap condition above)
+
+          // std::stringstream opponentMove(messageFromServer[1]);
+          // vector<int> opponentMoveCoords;
+          // while(opponentMove.good()){
+          //   string temp;
+          //   getline( opponentMove, temp, ',' );
+          //   opponentMoveCoords.push_back(atoi(temp.c_str()));
+          // }
+          //get x and y of opponents move
+          // int opponentMoveX = opponentMoveCoords[0];
+          // int opponentMoveY = opponentMoveCoords[1];
+          ////Node rootNode = Node();
+          ////rootNode.coord = std::make_tuple(opponentMoveX, opponentMoveY);
+          ////tree.rootNode = rootNode;
         }
         float factor = 2 - (turn / 20);
         float target = timeRemaining / 60;
         float time = (factor * target) + 2;
         std::cout << "hello\n";
+
+
+        // const int moveList[20][2] = { {5,4},
+        //                                {2,7},
+        //                                {8,9},
+        //                                {1,0},
+        //                                {5,4},
+        //                                {5,4},
+        //                                {5,4},
+        //                                {5,4},
+        //                                {5,4},
+        //                                {5,4},
+        //                                {5,4}
+        //
+        // };
+        //
+        // std::stringstream s1;
+        // s1 << moveList[turn][0];
+        // string str = s1.str();
+        // std::stringstream s2;
+        // s2 << moveList[turn][1];
+        // string str2 = s2.str();
+        // string testSending = str+","+str2+"\n";
+        // sendMessage(testSending);
+
         tree.search(time);
         std::tuple<int, int> bestMove = tree.getBestMove();
         std::cout << "hello\n";
@@ -222,3 +253,5 @@ int main(int argc , char *argv[]){
   printf("\n Finished Running cpp Agent with code %d \n", returnCode);
   return 0;
 }
+//python3 Hex.py "a=OURAGENT;./a.out " "a=PYAGENT;python3 agents/DefaultAgents/NaiveAgent.py" -v -p
+//python3 Hex.py "a=PYAGENT;python3 agents/DefaultAgents/NaiveAgent.py" "a=OURAGENT;./a.out " -v -p
