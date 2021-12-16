@@ -50,7 +50,7 @@ void GameState::play_blue(std::tuple<int,int> cell){
     int col = std::get<1>(cell);
     if ((this->board)[row][col] == 0) {
         (this->board)[row][col] = playerBLUE;
-        this->red_played += 1;
+        this->blue_played += 1;
     } else {
         //Raise Error here
         std::cout << "Cell is already Occupied";
@@ -93,10 +93,16 @@ int GameState::winner(){
 }
 
 void GameState::swap(){
-  this->to_play = playerBLUE;
+  if (this->to_play == playerBLUE){
+      this->to_play = playerBLUE;
+  } else {
+      this->to_play = playerRED;
+  }
+
   UnionFind temp = this->redGroups;
   this->redGroups = this->blueGroups;
   this->blueGroups = temp;
+
 }
 
 std::vector<std::tuple<int, int>> GameState::moves() {
